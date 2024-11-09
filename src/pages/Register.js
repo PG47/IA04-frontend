@@ -1,21 +1,27 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import axios from 'axios';
-import { TextField, Button, IconButton, Typography, Container, Box } from '@mui/material';
+import { TextField, Button, IconButton, Typography, Container, Box, Snackbar, SnackbarContent } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 
 function Register() {
   const { register, handleSubmit, formState: { errors } } = useForm();
   const [showPassword, setShowPassword] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [openSnackbar, setOpenSnackbar] = useState(false);
   const navigate = useNavigate();
 
   const onSubmit = async (data) => {
     try {
       const response = await axios.post('http://localhost:3000/user/register', data);
+      setErrorMessage(response.data.message);  // Success message from backend
+      //setOpenSnackbar(true);  // Display success notification
       alert(response.data.message);
+      setTimeout(() => navigate('/login'), 1500);  // Redirect to login page
     } catch (error) {
-      alert(error.response?.data?.message || 'Registration failed');
+      setErrorMessage(error.response?.data?.message || 'Registration failed');
+      setOpenSnackbar(true);
     }
   };
 
@@ -71,6 +77,23 @@ function Register() {
           <Button onClick={() => navigate('/login')} variant="outlined">Login</Button>
         </Box>
       </Box>
+
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={3000}
+        onClose={() => setOpenSnackbar(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <SnackbarContent
+          message={errorMessage}
+          sx={{
+            height: '10px',
+            backgroundColor: '#333', // Dark background color
+            color: '#fff', // White text color for contrast
+          }}
+        />
+      </Snackbar>
+
     </Container>
   );
 }
